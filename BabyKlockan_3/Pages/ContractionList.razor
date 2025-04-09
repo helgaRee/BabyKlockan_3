@@ -26,8 +26,8 @@ else
 {
     <tr>
         <td>@contraction.Number</td>
-        <td>@contraction.Duration</td>
-        <td>@contraction.RestTime?.TotalSeconds</td>
+        <td>@contraction.Duration.ToString(@"mm\:ss")</td>
+        <td>@contraction.RestTime?.ToString(@"mm\:ss")</td>
         <td>
             <button @onclick="() => RemoveContraction(contraction.Id)">Ta bort</button>
         </td>
