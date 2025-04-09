@@ -15,7 +15,9 @@
 <button @onclick="StopTimer" disabled="@(isRunning == false)">Stoppa</button>
 
 <!--Skicka listan till ContractionList-komponenten-->
-    <ContractionList contractions="@contractions" />
+    <ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
+    
+ 
 
 @code {
 
@@ -27,6 +29,7 @@
     private TimeSpan? duration;
     private string elapsedTime = "00:00";
     private Timer? timer;
+
 
     //deklarerar contractions
     private List<ContractionModel> contractions = new List<ContractionModel>();
@@ -68,33 +71,26 @@
     /// <summary>
     ///  stoppar timern, beräknar värkens duration, sparar den via ContractionService, och återställer startTime och isRunning för nästa värk.
     /// </summary>
-    private void StopTimer()
+    private async void StopTimer()
     {
         if (startTime.HasValue)
         {
             var endTime = DateTime.Now;
+
+            //Lägger till värk
             contractionService.AddContraction(startTime.Value, endTime);
 
+            //hämta listan från service
+            contractions = contractionService.GetAllContractions();
 
+           
 
-            //uppdatera lokala listan
-            var contraction = new ContractionModel
-            {
-                StartTime = startTime.Value,
-                EndTime = endTime
-            };
-
-            //lägg till i lokala listan
-            contractions.Add(contraction);
-
-            elapsedTime = $"Värk avslutad: {endTime.ToLongTimeString()}";
-
-            StateHasChanged();
+         
             isRunning = false;
-
             //stoppa timer
             timer?.Dispose();
             timer = null;
+            StateHasChanged();
         }
     }
 
@@ -108,6 +104,13 @@
             //uppdaerar UI
             InvokeAsync(StateHasChanged);
         }
+    }
+
+
+    //event callback för att ta emot uppdaterad lista
+    private void UpdateContractions(List<ContractionModel> updateContractions)
+    {
+        contractions = updateContractions;
     }
 
 }

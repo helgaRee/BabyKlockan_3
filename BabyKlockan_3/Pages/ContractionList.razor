@@ -1,5 +1,6 @@
 ﻿@using BabyKlockan_3.Models
 @using BabyKlockan_3.Services
+@using System.Diagnostics
 @inject ContractionService contractionService
 
 <h3>Värkar</h3>
@@ -14,27 +15,25 @@ else
         <thead>
             <tr>
                 <th>#</th>
-                <th>Längd (sek)</th>
-                <th>Paus sedan förra (sek)</th>
+                <th>Längd</th>
+                <th>Vila</th>
             </tr>
         </thead>
         <tbody>
 
-            @if(contractionService.GetAllContractions().Any())
-            {
-                int index = 1;
-                foreach (var contraction in contractions)
-                {
-                    <tr>
-                        <td>@index</td>
-                        <td>@contraction.Number</td>
-                        <td>@contraction.Duration.ToString(@"hh\:mm\:ss")</td>
-                        <td>@contraction.RestTime?.ToString(@"hh\:mm\:ss")</td>
-                    </tr>    
-                    index++;
-                }
-            }
 
+@foreach (var contraction in contractions)
+{
+    <tr>
+        <td>@contraction.Number</td>
+        <td>@contraction.Duration</td>
+        <td>@contraction.RestTime?.TotalSeconds</td>
+        <td>
+            <button @onclick="() => RemoveContraction(contraction.Id)">Ta bort</button>
+        </td>
+    </tr>
+
+}
             
         </tbody>
     </table>
@@ -43,7 +42,10 @@ else
 @code {
     //Parameter för att kunna ta emot värkar från föräldern
     [Parameter] public List<ContractionModel> contractions { get; set; } = new List<ContractionModel>();
+    //EventCallback i din komponent som föräldern kan lyssna på för att ta emot uppdaterad lista.
+    [Parameter] public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
 
+    int counter = 1;
 
 
     //på Init, hämta alla värkar med data från service
@@ -51,4 +53,30 @@ else
     {
         contractions = contractionService.GetAllContractions();
     }
+
+    public void RefreshList()
+    {
+        //hämta hela listan och uppdatera sen UI
+        contractions = contractionService.GetAllContractions();
+        StateHasChanged();
+    }
+
+    private void RemoveContraction(Guid id)
+    {
+        Debug.WriteLine($"Värk nummer {id} är borttagen");
+
+        //hitta värk att ta bort
+        var contractionToRemove = contractions.FirstOrDefault(c => c.Id == id);
+        if (contractionToRemove != null)
+        {
+            //ta brot från listan
+            contractions.Remove(contractionToRemove);
+
+            //Uppdatera UI
+            StateHasChanged();
+        }
+
+    }
+
+
 }

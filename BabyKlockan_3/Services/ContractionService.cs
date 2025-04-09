@@ -1,4 +1,5 @@
 ﻿using BabyKlockan_3.Models;
+using System.Diagnostics;
 
 namespace BabyKlockan_3.Services;
 //Denna service ska hantera listan med värkar och låter mig lägga till nya, och sparar dem.
@@ -12,17 +13,29 @@ public class ContractionService
     {
         //skapa variabel för duration
         var duration = endTime - startTime;
+        TimeSpan? restTime = null;
+
+        if (contractionList.Count > 0)
+        {
+            var previousContractionEndTime = contractionList.Last().EndTime;
+            restTime = startTime - previousContractionEndTime;
+
+        }
+
         //skapa en ny värk genom modellen som ett object
         var contraction = new ContractionModel
         {
+            Number = contractionList.Count + 1,
             StartTime = startTime,
             EndTime = endTime,
-            Number = contractionList.Count + 1,
-            RestTime = contractionList.Count > 0 //om det redan finns en värk, räkna ut tiden mellan föregående och nuvarande
-                    ? endTime - contractionList.Last().StartTime : null,
+            Duration = endTime - startTime,
+            RestTime = restTime,
         };
         //Efter att ha skapat en värk, lägg till den i listan
         contractionList.Add(contraction);
+
+
+
     }
 
 
@@ -32,7 +45,18 @@ public class ContractionService
     }
 
 
+    public void RemoveContractionById(Guid id)
+    {
+        Debug.WriteLine("Inne i servicen");
+        var contraction = contractionList.FirstOrDefault(c => c.Id == id);
+        if (contraction != null)
+        {
+            contractionList.Remove(contraction);
+        }
+        Debug.WriteLine("värk borttagen via service");
 
+
+    }
 
     //nollställ
     public void ClearList()
