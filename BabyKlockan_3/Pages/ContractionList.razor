@@ -1,0 +1,54 @@
+﻿@using BabyKlockan_3.Models
+@using BabyKlockan_3.Services
+@inject ContractionService contractionService
+
+<h3>Värkar</h3>
+
+@if (contractions.Count == 0)
+{
+    <p>Inga värkar loggade ännu.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Längd (sek)</th>
+                <th>Paus sedan förra (sek)</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @if(contractionService.GetAllContractions().Any())
+            {
+                int index = 1;
+                foreach (var contraction in contractions)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@contraction.Number</td>
+                        <td>@contraction.Duration.ToString(@"hh\:mm\:ss")</td>
+                        <td>@contraction.RestTime?.ToString(@"hh\:mm\:ss")</td>
+                    </tr>    
+                    index++;
+                }
+            }
+
+            
+        </tbody>
+    </table>
+}
+
+@code {
+    //Parameter för att kunna ta emot värkar från föräldern
+    [Parameter] public List<ContractionModel> contractions { get; set; } = new List<ContractionModel>();
+
+
+
+    //på Init, hämta alla värkar med data från service
+    protected override void OnInitialized()
+    {
+        contractions = contractionService.GetAllContractions();
+    }
+}

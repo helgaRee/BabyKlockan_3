@@ -1,0 +1,113 @@
+﻿@page "/contractionTimer"
+@using BabyKlockan_3.Models
+@using BabyKlockan_3.Services
+@inject ContractionService contractionService
+
+<h3>VärkTimer</h3>
+
+@* <button @onclick="ToggleTimer" class="btn-circle">
+    @(isRunning ? "Stoppa" : "Starta")
+</button> *@
+
+<p>@elapsedTime</p>
+
+<button @onclick="StartTimer" disabled="@isRunning">Starta</button>
+<button @onclick="StopTimer" disabled="@(isRunning == false)">Stoppa</button>
+
+<!--Skicka listan till ContractionList-komponenten-->
+    <ContractionList contractions="@contractions" />
+
+@code {
+
+    private bool isRunning = false;
+    //sparar starttiden
+    private DateTime? startTime;
+    private DateTime? endTime;
+    //mätningens längd
+    private TimeSpan? duration;
+    private string elapsedTime = "00:00";
+    private Timer? timer;
+
+    //deklarerar contractions
+    private List<ContractionModel> contractions = new List<ContractionModel>();
+
+
+    //metoden styg logik för start/stopp
+    private void ToggleTimer()
+    {
+        if(!isRunning)
+        {
+            startTime = DateTime.Now;
+        } else
+        {
+            //räknar ut hur länge värken varade
+            var endTime = DateTime.Now;
+            duration = endTime - startTime;
+            //spara datan till en service ...->
+            contractionService.AddContraction(startTime!.Value, endTime);
+        }
+
+        isRunning = !isRunning;
+    }
+
+
+    /// <summary>
+    /// Timern startas vid klick, och tiden uppdateras kontinuerligt
+    /// </summary>
+    private void StartTimer()
+    {
+        startTime = DateTime.Now;
+        isRunning = true;
+        elapsedTime = $"Värk startad: {startTime?.ToString("hh:mm:ss")}";
+
+        //startar en timer som uppdaterar tiden varje sekund
+        timer = new Timer(UpdateElapsedTime, null, 0, 1000);
+    }
+
+
+    /// <summary>
+    ///  stoppar timern, beräknar värkens duration, sparar den via ContractionService, och återställer startTime och isRunning för nästa värk.
+    /// </summary>
+    private void StopTimer()
+    {
+        if (startTime.HasValue)
+        {
+            var endTime = DateTime.Now;
+            contractionService.AddContraction(startTime.Value, endTime);
+
+
+
+            //uppdatera lokala listan
+            var contraction = new ContractionModel
+            {
+                StartTime = startTime.Value,
+                EndTime = endTime
+            };
+
+            //lägg till i lokala listan
+            contractions.Add(contraction);
+
+            elapsedTime = $"Värk avslutad: {endTime.ToLongTimeString()}";
+
+            StateHasChanged();
+            isRunning = false;
+
+            //stoppa timer
+            timer?.Dispose();
+            timer = null;
+        }
+    }
+
+    public void UpdateElapsedTime(object? state)
+    {
+        if (startTime.HasValue)
+        {
+            var elapsed = DateTime.Now - startTime.Value;
+            //visa tid som minuter
+            elapsedTime = elapsed.ToString(@"mm\:ss");
+            //uppdaerar UI
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+}
