@@ -3,7 +3,9 @@
 @using System.Diagnostics
 @inject ContractionService contractionService
 
-<h3>Värkar</h3>
+
+
+
 
 @if (contractions.Count == 0)
 {
@@ -11,6 +13,7 @@
 }
 else
 {
+<div class="dataPresentation">
     <table class="table">
         <thead>
             <tr>
@@ -22,21 +25,47 @@ else
         <tbody>
 
 
-@foreach (var contraction in contractions)
+@* @foreach (var contraction in contractions)
 {
     <tr>
         <td>@contraction.Number</td>
         <td>@contraction.Duration.ToString(@"mm\:ss")</td>
-        <td>@contraction.RestTime?.ToString(@"mm\:ss")</td>
+        <td class="data-rest">@contraction.RestTime?.ToString(@"mm\:ss")</td>
         <td>
             <button @onclick="() => RemoveContraction(contraction.Id)">Ta bort</button>
         </td>
     </tr>
 
-}
+} *@
+
+                @for (int i = 0; i < contractions.Count; i++)
+                {
+                    var contraction = contractions[i];
+                    var restTime = contraction.RestTime?.ToString(@"mm\:ss");
+
+                    <tr>
+                        <td>@contraction.Number</td>
+                        <td>@contraction.Duration.ToString(@"mm\:ss")</td>
+
+                        <td class="rest-visual">
+                            @if (i > 0 && contraction.RestTime.HasValue)
+                            {
+                                <div class="rest-block">
+                                    <span class="arrow">⟵</span>
+                                    <span class="rest-time">@restTime</span>
+                                </div>
+                            }
+                        </td>
+
+                        <td>
+                            <button @onclick="() => RemoveContraction(contraction.Id)" class="btn-remove">Ta bort</button>
+                        </td>
+                    </tr>
+                }
             
         </tbody>
     </table>
+    </div>
 }
 
 @code {

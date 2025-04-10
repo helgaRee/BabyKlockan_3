@@ -3,19 +3,19 @@
 @using BabyKlockan_3.Services
 @inject ContractionService contractionService
 
-<h3>VärkTimer</h3>
 
-@* <button @onclick="ToggleTimer" class="btn-circle">
+<!--HANTERING AV LOGIK FÖR ATT LÄGGA TILL EN NY VÄRK-->
+<!--KOMMUNICERAR MED CONTRACTIONSERVICE-->
+
+
+ <button @onclick="ToggleTimer" class="btn-circle @(!isRunning ? "btn-start" : "btn-stop")">
     @(isRunning ? "Stoppa" : "Starta")
-</button> *@
+</button> 
 
-<p>@elapsedTime</p>
-
-<button @onclick="StartTimer" disabled="@isRunning">Starta</button>
-<button @onclick="StopTimer" disabled="@(isRunning == false)">Stoppa</button>
+<h3>Tid: @elapsedTime</h3>
 
 <!--Skicka listan till ContractionList-komponenten-->
-    <ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
+<ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
     
  
 
@@ -36,21 +36,20 @@
 
 
     //metoden styg logik för start/stopp
-    private void ToggleTimer()
+    private async Task ToggleTimer()
     {
         if(!isRunning)
         {
-            startTime = DateTime.Now;
+            isRunning = true;
+            StartTimer();
         } else
         {
-            //räknar ut hur länge värken varade
-            var endTime = DateTime.Now;
-            duration = endTime - startTime;
-            //spara datan till en service ...->
-            contractionService.AddContraction(startTime!.Value, endTime);
+            await StopTimer();
+            isRunning = false;
         }
 
-        isRunning = !isRunning;
+        // isRunning = !isRunning;
+        StateHasChanged();
     }
 
 
@@ -60,18 +59,16 @@
     private void StartTimer()
     {
         startTime = DateTime.Now;
-        isRunning = true;
-        elapsedTime = $"Värk startad: {startTime?.ToString("hh:mm:ss")}";
-
         //startar en timer som uppdaterar tiden varje sekund
         timer = new Timer(UpdateElapsedTime, null, 0, 1000);
+        isRunning = true;
     }
 
 
     /// <summary>
     ///  stoppar timern, beräknar värkens duration, sparar den via ContractionService, och återställer startTime och isRunning för nästa värk.
     /// </summary>
-    private async void StopTimer()
+    private async Task StopTimer()
     {
         if (startTime.HasValue)
         {
@@ -79,17 +76,20 @@
 
             //Lägger till värk
             contractionService.AddContraction(startTime.Value, endTime);
-
             //hämta listan från service
             contractions = contractionService.GetAllContractions();
 
-           
 
-         
-            isRunning = false;
             //stoppa timer
             timer?.Dispose();
             timer = null;
+
+            //nollställ klockan
+            elapsedTime = TimeSpan.Zero.ToString(@"mm\:ss");
+
+            isRunning = false;
+            Console.WriteLine($"Elapsed time: {elapsedTime}");
+
             StateHasChanged();
         }
     }

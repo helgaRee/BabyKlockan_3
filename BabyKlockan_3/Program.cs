@@ -1,4 +1,3 @@
-using BabyKlockan_3.Data;
 using BabyKlockan_3.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,7 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ContractionService>();
 
 var app = builder.Build();
