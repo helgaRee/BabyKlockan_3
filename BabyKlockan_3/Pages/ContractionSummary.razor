@@ -1,0 +1,17 @@
+﻿<h3>ContractionSummary</h3>
+
+<!--KOMPONENTEN SKA TA EMOT DATA OM ANTALET VÄRKAR, VILOTID OCH VARAKTIGHET OCH VISA I    UI-->
+<!--komponenten tar emot data (t.ex. antal värkar, genomsnittlig vila och varaktighet) och visar en sammanfattning.-->
+
+<div class="information">
+    <p class="info-amount">@ContractionsPerTenMinutes antal värkar per minuter</p>
+    <p class="info-rest">@AverageRestTime minuter mellan värkar</p>
+    <p class="info-length">@AverageDuration Värken varaktig i X minuter</p>
+</div>
+
+@code {
+    [Parameter] public double ContractionsPerTenMinutes { get; set; }
+    [Parameter] public double AverageRestTime { get; set; }
+    [Parameter] public double AverageDuration { get; set; }
+
+}

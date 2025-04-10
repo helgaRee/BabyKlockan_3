@@ -6,6 +6,7 @@
 
 <!--HANTERING AV LOGIK FÖR ATT LÄGGA TILL EN NY VÄRK-->
 <!--KOMMUNICERAR MED CONTRACTIONSERVICE-->
+<!-- samlar och hanterar data om värkarna.-->
 
 
  <button @onclick="ToggleTimer" class="btn-circle @(!isRunning ? "btn-start" : "btn-stop")">
@@ -16,8 +17,10 @@
 
 <!--Skicka listan till ContractionList-komponenten-->
 <ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
-    
- 
+<ContractionSummary contractionsPerTenMinutes="@contractionsPerTenMinutes" />
+
+
+
 
 @code {
 
@@ -34,6 +37,9 @@
     //deklarerar contractions
     private List<ContractionModel> contractions = new List<ContractionModel>();
 
+    private double contractionsPerTenMinutes;
+    private double averageDuration;
+    private double averageRestTime;
 
     //metoden styg logik för start/stopp
     private async Task ToggleTimer()
@@ -76,8 +82,12 @@
 
             //Lägger till värk
             contractionService.AddContraction(startTime.Value, endTime);
-            //hämta listan från service
+
+            //hämta listan från service och uppdatera listan och sammanfattnignen
             contractions = contractionService.GetAllContractions();
+            contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
+            averageDuration = contractionService.GetAverageDuration();
+            averageRestTime = contractionService.GetAverageRestTime();
 
 
             //stoppa timer
