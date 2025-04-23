@@ -5,7 +5,8 @@
 
 
 
-
+<button class="btn" onclick="@ShowAllContractions">Visa alla sparade värkar</button>
+<button onclick="@DeleteAllContractions">Rensa hela listan</button>
 
 @if (contractions.Count == 0)
 {
@@ -24,20 +25,6 @@ else
         </thead>
         <tbody>
 
-
-@* @foreach (var contraction in contractions)
-{
-    <tr>
-        <td>@contraction.Number</td>
-        <td>@contraction.Duration.ToString(@"mm\:ss")</td>
-        <td class="data-rest">@contraction.RestTime?.ToString(@"mm\:ss")</td>
-        <td>
-            <button @onclick="() => RemoveContraction(contraction.Id)">Ta bort</button>
-        </td>
-    </tr>
-
-} *@
-
                 @for (int i = 0; i < contractions.Count; i++)
                 {
                     var contraction = contractions[i];
@@ -51,14 +38,14 @@ else
                             @if (i > 0 && contraction.RestTime.HasValue)
                             {
                                 <div class="rest-block">
-                                    <span class="arrow">⟵</span>
+                                    <span class="arrow">⟵<i class="fa-solid fa-arrow-left-long"></i></span>
                                     <span class="rest-time">@restTime</span>
                                 </div>
                             }
                         </td>
 
                         <td>
-                            <button @onclick="() => RemoveContraction(contraction.Id)" class="btn-remove">Ta bort</button>
+                            <button @onclick="async () => await RemoveContraction(contraction.Id)" class="btn-remove">Ta bort</button>
                         </td>
                     </tr>
                 }
@@ -66,6 +53,9 @@ else
         </tbody>
     </table>
     </div>
+
+
+
 }
 
 @code {
@@ -76,25 +66,50 @@ else
 
     int counter = 1;
 
-
-    //på Init, hämta alla värkar med data från service
-    protected override void OnInitialized()
+    private async Task ShowAllContractions()
     {
-        contractions = contractionService.GetAllContractions();
+        contractions = await contractionService.GetAllContractionsAsync();
     }
 
-    public void RefreshList()
+    private async Task DeleteAllContractions()
     {
-        //hämta hela listan och uppdatera sen UI
-        contractions = contractionService.GetAllContractions();
+        await contractionService.ClearListAsync();
+        //rensa listan i komponenten
+        contractions.Clear();
         StateHasChanged();
     }
 
-    private void RemoveContraction(Guid id)
+    //på Init, hämta alla värkar med data från service
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     contractions = await contractionService.GetAllContractionsAsync();
+    // }
+
+
+
+
+    // public async Task RefreshList()
+    // {
+    //     //hämta hela listan och uppdatera sen UI
+    //     contractions = await contractionService.GetAllContractionsAsync();
+    //     StateHasChanged();
+    // }
+
+
+    /// <summary>
+    /// Tar bort värken från Listan
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+
+    private async Task RemoveContraction(Guid id)
     {
         Debug.WriteLine($"Värk nummer {id} är borttagen");
 
-        //hitta värk att ta bort
+        //anropa service, hämta data från db
+        await contractionService.RemoveContractionByIdAsync(id);
+
+        //Ta bort från UI-listan 
         var contractionToRemove = contractions.FirstOrDefault(c => c.Id == id);
         if (contractionToRemove != null)
         {

@@ -1,4 +1,6 @@
-﻿using BabyKlockan_3.Models;
+﻿using BabyKlockan_3.Data;
+using BabyKlockan_3.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace BabyKlockan_3.Services;
@@ -6,61 +8,106 @@ namespace BabyKlockan_3.Services;
 public class ContractionService
 {
     //skapar lista för ContractionData
-    public List<ContractionModel> contractionList { get; set; } = new();
+    //public List<ContractionModel> contractionList { get; set; } = new();
+    private readonly DataContext _context;
 
-
-
-
-    //Metod för att lägga till en värk, skicka med start och sluttid från modell
-    public void AddContraction(DateTime startTime, DateTime endTime)
+    public ContractionService(DataContext context)
     {
-        //skapa variabel för duration
+
+        _context = context;
+    }
+
+
+    /// <summary>
+    /// Metod för att lägga till en värk, skicka med start och sluttid från modell
+    /// </summary>
+    /// <param name="startTime"></param>
+    /// <param name="endTime"></param>
+    public async Task AddContractionAsync(DateTime startTime, DateTime endTime)
+    {
         var duration = endTime - startTime;
         TimeSpan? restTime = null;
+        var contractions = await _context.Contractions.ToListAsync();
 
-        if (contractionList.Count > 0)
+        if (contractions.Count() > 0)
         {
-            var previousContractionEndTime = contractionList.Last().EndTime;
-            restTime = startTime - previousContractionEndTime;
+            //var previousContractionEndTime = contractions.Last().EndTime;
+            //restTime = startTime - previousContractionEndTime;
 
+            var previousContraction = contractions
+                .OrderByDescending(c => c.EndTime)
+                .FirstOrDefault();
+
+            if (previousContraction != null)
+            {
+                restTime = startTime - previousContraction.EndTime;
+            }
         }
 
         //skapa en ny värk genom modellen som ett object
         var contraction = new ContractionModel
         {
-            Number = contractionList.Count + 1,
+            Number = contractions.Count() + 1,
             StartTime = startTime,
             EndTime = endTime,
             Duration = endTime - startTime,
             RestTime = restTime,
         };
         //Efter att ha skapat en värk, lägg till den i listan
-        contractionList.Add(contraction);
+        await _context.Contractions.AddAsync(contraction);
+        await _context.SaveChangesAsync();
+
+
     }
 
-
-    public List<ContractionModel> GetAllContractions()
+    /// <summary>
+    /// Metod för att hämta alla värkar
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<ContractionModel>> GetAllContractionsAsync()
     {
-        return contractionList;
+        var contractions = await _context.Contractions.ToListAsync();
+        return contractions;
     }
 
+    public async Task<List<ContractionModel>> GetContractionsLastHourAsync()
+    {
+        //jämför tiden nu med minus 60 min
+        //skapa variabel för tiden för en timma sedan
+        var OneHourAgo = DateTime.Now.AddHours(-1);
+        //hämta alla värkar från senaste timmen från db
+        var recentContractions = await _context.Contractions
+            .Where(c => c.StartTime >= OneHourAgo)
+            .ToListAsync();
 
-    public void RemoveContractionById(Guid id)
+        return recentContractions;
+    }
+
+    /// <summary>
+    /// Metod för att ta bort en värk av dess ID
+    /// </summary>
+    /// <param name="id"></param>
+    public async Task RemoveContractionByIdAsync(Guid id)
     {
         Debug.WriteLine("Inne i servicen");
-        var contraction = contractionList.FirstOrDefault(c => c.Id == id);
+        var contraction = _context.Contractions.FirstOrDefault(c => c.Id == id);
         if (contraction != null)
         {
-            contractionList.Remove(contraction);
+            _context.Contractions.Remove(contraction);
+            await _context.SaveChangesAsync();
+            Debug.WriteLine("värk borttagen ur db");
         }
-        Debug.WriteLine("värk borttagen via service");
     }
 
-    //beräkna antal värkar per 10 minut
+
+    /// <summary>
+    /// Metod för att hämta antalet värkar som samlats in under de senaste 10 min
+    /// </summary>
+    /// <returns></returns>
     public double GetContractionsPerTenMinutes()
     {
         //filtrera ut de värkar som inträffad under de senaste 10 minuterna
-        var recentContractions = contractionList
+        var recentContractions = _context.Contractions
             .Where(c => c.StartTime >= DateTime.Now.AddMinutes(-10))
             .ToList();
 
@@ -69,25 +116,61 @@ public class ContractionService
     }
 
 
-    //beräkna medellängd på värkar
+    /// <summary>
+    /// Hämtar data från db till minnet, och sen gör beräkning
+    /// </summary>
+    /// <returns></returns>
     public double GetAverageDuration()
     {
-        if (contractionList.Count == 0) return 0;
-        return contractionList.Average(c => c.Duration.TotalMinutes);
+        //if (_context.Contractions.Count() == 0) return 0;
+        //return _context.Contractions.Average(c => c.Duration.TotalMinutes);
+
+        //Hämta listan i minnet med asEnumerable
+        var contractions = _context.Contractions.AsEnumerable();
+        if (!contractions.Any()) return 0;
+
+        //beräkna genomsnittliga durationen efter att data hämtats
+        return contractions.Average(c => c.Duration.TotalSeconds);
+
+
     }
 
-    //beräkna genomsnittlig vila mellan värkar
+
+    /// <summary>
+    /// Beräknar den genomsnittliga vilan mellan värkar
+    /// </summary>
+    /// <returns></returns>
     public double GetAverageRestTime()
     {
-        if (contractionList.Count < 2) return 0;
-        var restTimes = contractionList.Select(c => c.RestTime).Where(r => r.HasValue).Select(r => r.Value.TotalMinutes);
-        return restTimes.Any() ? restTimes.Average() : 0;
+
+        //if (_context.Contractions.Count() < 2) return 0;
+        //var restTimes = _context.Contractions
+        //    .Select(c => c.RestTime)
+        //    .Where(r => r.HasValue)
+        //    .Select(r => r!.Value.TotalMinutes);
+        //return restTimes.Any() ? restTimes.Average() : 0;
+
+        var restTimes = _context.Contractions
+            .Where(c => c.RestTime.HasValue)
+            .AsEnumerable() //hämtar data till klient/minnet
+            .Select(c => c.RestTime!.Value.TotalSeconds);
+
+        if (!restTimes.Any()) return 0;
+
+        return restTimes.Average();
+
     }
 
 
-    //nollställ
-    public void ClearList()
+    /// <summary>
+    /// Nollställer listan med värkar
+    /// </summary>
+    public async Task ClearListAsync()
     {
-        contractionList.Clear();
+        //hämta alla värkar från db och gör tille n lista
+        var allContractions = _context.Contractions.ToList();
+        //ta bort alla värkar från databasen
+        _context.Contractions.RemoveRange(allContractions);
+        await _context.SaveChangesAsync();
     }
 }

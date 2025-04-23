@@ -41,7 +41,12 @@
     private double averageDuration;
     private double averageRestTime;
 
-    //metoden styg logik för start/stopp
+
+
+    /// <summary>
+    /// metoden styr logik för start/stopp
+    /// </summary>
+    /// <returns></returns>
     private async Task ToggleTimer()
     {
         if(!isRunning)
@@ -53,9 +58,9 @@
             await StopTimer();
             isRunning = false;
         }
-
-        // isRunning = !isRunning;
         StateHasChanged();
+
+
     }
 
 
@@ -64,10 +69,14 @@
     /// </summary>
     private void StartTimer()
     {
+
         startTime = DateTime.Now;
         //startar en timer som uppdaterar tiden varje sekund
         timer = new Timer(UpdateElapsedTime, null, 0, 1000);
         isRunning = true;
+
+
+
     }
 
 
@@ -76,15 +85,16 @@
     /// </summary>
     private async Task StopTimer()
     {
+        Console.WriteLine("Inne i stoptimer");
         if (startTime.HasValue)
         {
             var endTime = DateTime.Now;
 
             //Lägger till värk
-            contractionService.AddContraction(startTime.Value, endTime);
+            await contractionService.AddContractionAsync(startTime.Value, endTime);
 
             //hämta listan från service och uppdatera listan och sammanfattnignen
-            contractions = contractionService.GetAllContractions();
+            contractions = await contractionService.GetContractionsLastHourAsync();
             contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
             averageDuration = contractionService.GetAverageDuration();
             averageRestTime = contractionService.GetAverageRestTime();
@@ -104,6 +114,10 @@
         }
     }
 
+    /// <summary>
+    /// Uppdaterar tiden
+    /// </summary>
+    /// <param name="state"></param>
     public void UpdateElapsedTime(object? state)
     {
         if (startTime.HasValue)
@@ -111,13 +125,25 @@
             var elapsed = DateTime.Now - startTime.Value;
             //visa tid som minuter
             elapsedTime = elapsed.ToString(@"mm\:ss");
-            //uppdaerar UI
-            InvokeAsync(StateHasChanged);
+
+            try
+            {
+                //uppdaterar UI
+                InvokeAsync(StateHasChanged);
+
+            }
+            catch (ObjectDisposedException)
+            {
+                
+            }
         }
     }
 
 
-    //event callback för att ta emot uppdaterad lista
+    /// <summary>
+    /// En event callback för att ta emot uppdaterad lista
+    /// </summary>
+    /// <param name="updateContractions"></param>
     private void UpdateContractions(List<ContractionModel> updateContractions)
     {
         contractions = updateContractions;

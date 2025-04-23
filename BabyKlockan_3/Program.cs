@@ -1,13 +1,26 @@
+using BabyKlockan_3.Data;
 using BabyKlockan_3.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<ContractionService>();
+builder.Services.AddScoped<ContractionService>();
+
+//Add db
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseSqlite("Data Source=contractions.db"));
 
 var app = builder.Build();
+
+//create db
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+    db.Database.EnsureCreated(); //create db if it doesn't already exist
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
