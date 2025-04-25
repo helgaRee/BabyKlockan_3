@@ -31,8 +31,6 @@ public class ContractionService
 
         if (contractions.Count() > 0)
         {
-            //var previousContractionEndTime = contractions.Last().EndTime;
-            //restTime = startTime - previousContractionEndTime;
 
             var previousContraction = contractions
                 .OrderByDescending(c => c.EndTime)

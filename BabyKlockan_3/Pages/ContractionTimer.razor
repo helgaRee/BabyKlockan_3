@@ -8,12 +8,12 @@
 <!--KOMMUNICERAR MED CONTRACTIONSERVICE-->
 <!-- samlar och hanterar data om värkarna.-->
 
+<h3>Tid: @elapsedTime</h3>
 
  <button @onclick="ToggleTimer" class="btn-circle @(!isRunning ? "btn-start" : "btn-stop")">
     @(isRunning ? "Stoppa" : "Starta")
 </button> 
 
-<h3>Tid: @elapsedTime</h3>
 
 <!--Skicka listan till ContractionList-komponenten-->
 <ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />

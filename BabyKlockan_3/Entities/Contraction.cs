@@ -1,8 +1,10 @@
-﻿namespace BabyKlockan_3.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class ContractionModel
+namespace BabyKlockan_3.Entities;
+
+public class Contraction
 {
-
+    [Key]
     public Guid Id { get; set; } = Guid.NewGuid(); //genererar ett unikt ID
     public int Number { get; set; } //för att numrera varje värk
     public DateTime StartTime { get; set; }
@@ -13,4 +15,3 @@ public class ContractionModel
     public TimeSpan? RestTime { get; set; }
 
 }
-

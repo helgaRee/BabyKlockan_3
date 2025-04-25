@@ -9,6 +9,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<ContractionService>();
 
+
+
 //Add db
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite("Data Source=contractions.db"));

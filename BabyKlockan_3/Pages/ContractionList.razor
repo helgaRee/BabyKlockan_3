@@ -6,7 +6,7 @@
 
 
 <button class="btn" onclick="@ShowAllContractions">Visa alla sparade värkar</button>
-<button onclick="@DeleteAllContractions">Rensa hela listan</button>
+
 
 @if (contractions.Count == 0)
 {
@@ -52,6 +52,7 @@ else
             
         </tbody>
     </table>
+        <button class="btn" onclick="@DeleteAllContractions">Rensa hela listan</button>
     </div>
 
 
