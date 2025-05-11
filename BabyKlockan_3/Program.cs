@@ -13,7 +13,8 @@ builder.Services.AddScoped<ContractionService>();
 
 //Add db
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlite("Data Source=contractions.db"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DatabaseConnection")));
+
 
 var app = builder.Build();
 

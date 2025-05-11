@@ -3,9 +3,17 @@
 @using System.Diagnostics
 @inject ContractionService contractionService
 
+@*BARNKOMPONENT TILL TIMER: Visar värklista som tabell.
 
+Kan visa alla sparade värkar (via ShowAllContractions()).
+
+Kan radera enskilda värkar eller alla.
+
+Använder ContractionService för datakommunikation. *@
 
 <button class="btn" onclick="@ShowAllContractions">Visa alla sparade värkar</button>
+
+
 
 
 @if (contractions.Count == 0)
@@ -53,6 +61,7 @@ else
         </tbody>
     </table>
         <button class="btn" onclick="@DeleteAllContractions">Rensa hela listan</button>
+
     </div>
 
 
@@ -62,14 +71,18 @@ else
 @code {
     //Parameter för att kunna ta emot värkar från föräldern
     [Parameter] public List<ContractionModel> contractions { get; set; } = new List<ContractionModel>();
-    //EventCallback i din komponent som föräldern kan lyssna på för att ta emot uppdaterad lista.
-    [Parameter] public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
+    //Definierar en EventCallback-parameter för att kunna skicka uppdaterad lista till föräldern (ContractionTimer)
+    [Parameter] 
+    public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
 
-    int counter = 1;
+   // int counter = 1;
 
     private async Task ShowAllContractions()
     {
         contractions = await contractionService.GetAllContractionsAsync();
+        //Anropa förälderns Metod genom EventCallback-anrop
+        await OnContractionChange.InvokeAsync(contractions);
+
     }
 
     private async Task DeleteAllContractions()
@@ -77,8 +90,55 @@ else
         await contractionService.ClearListAsync();
         //rensa listan i komponenten
         contractions.Clear();
-        StateHasChanged();
+        // StateHasChanged(); --> anropa istället förälderns metod genom EventCallback-anrop
+        await OnContractionChange.InvokeAsync(contractions);
     }
+
+
+    /// <summary>
+    /// Tar bort värken från Listan
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+
+    private async Task RemoveContraction(Guid id)
+    {
+
+        Debug.WriteLine($"Värk nummer {id} är borttagen");
+
+        //anropa service, hämta data från db
+        await contractionService.RemoveContractionByIdAsync(id);
+
+        //Ta bort från UI-listan
+        var contractionToRemove = contractions.FirstOrDefault(c => c.Id == id);
+        if (contractionToRemove != null)
+        {
+            //ta brot från listan
+            contractions.Remove(contractionToRemove);
+
+            //Anropa förälderns Metod genom EventCallback-anrop
+            await OnContractionChange.InvokeAsync(contractions);
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //på Init, hämta alla värkar med data från service
     // protected override async Task OnInitializedAsync()
@@ -95,33 +155,6 @@ else
     //     contractions = await contractionService.GetAllContractionsAsync();
     //     StateHasChanged();
     // }
-
-
-    /// <summary>
-    /// Tar bort värken från Listan
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-
-    private async Task RemoveContraction(Guid id)
-    {
-        Debug.WriteLine($"Värk nummer {id} är borttagen");
-
-        //anropa service, hämta data från db
-        await contractionService.RemoveContractionByIdAsync(id);
-
-        //Ta bort från UI-listan 
-        var contractionToRemove = contractions.FirstOrDefault(c => c.Id == id);
-        if (contractionToRemove != null)
-        {
-            //ta brot från listan
-            contractions.Remove(contractionToRemove);
-
-            //Uppdatera UI
-            StateHasChanged();
-        }
-
-    }
 
 
 }

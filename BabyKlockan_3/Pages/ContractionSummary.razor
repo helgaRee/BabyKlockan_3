@@ -1,9 +1,12 @@
-﻿<!--komponenten tar emot data (t.ex. antal värkar, genomsnittlig vila och varaktighet) och visar en sammanfattning.-->
+﻿@* Visar statistikdata (antal värkar per 10 min, medelvila, medellängd).
+
+Får all data som @Parameter från föräldern (ContractionTimer). *@
 
 <div class="information">
-    <p class="info-amount">@ContractionsPerTenMinutes antal värkar per minuter</p>
-@*     <p class="info-rest">@AverageRestTime minuter mellan värkar</p>
-    <p class="info-length">@AverageDuration Värken varaktig i X minuter</p> *@
+    <p class="info-amount">@ContractionsPerTenMinutes antal värkar per <strong>10</strong> minuter</p>
+    <p class="info-length"> Värken varaktig i <strong>@AverageDuration</strong> minuter</p>
+     
+    @*<p class="info-rest">@AverageRestTime minuter mellan värkar</p> *@
 </div>
 
 @code {

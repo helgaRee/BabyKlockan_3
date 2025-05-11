@@ -4,9 +4,11 @@
 @inject ContractionService contractionService
 
 
-<!--HANTERING AV LOGIK FÖR ATT LÄGGA TILL EN NY VÄRK-->
-<!--KOMMUNICERAR MED CONTRACTIONSERVICE-->
-<!-- samlar och hanterar data om värkarna.-->
+@* HUVUDKOMPONENT: Användarens gränssnitt för att starta/stoppa en värk.
+
+Använder ContractionService för att spara, hämta och räkna statistik på värkar.
+
+Skickar uppdaterad lista till ContractionList och sammanfattning till ContractionSummary. *@
 
 <h3>Tid: @elapsedTime</h3>
 
@@ -15,9 +17,13 @@
 </button> 
 
 
-<!--Skicka listan till ContractionList-komponenten-->
+<!--Binder föräldrarkomponenten till metoden-->
 <ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
-<ContractionSummary contractionsPerTenMinutes="@contractionsPerTenMinutes" />
+<ContractionSummary 
+    contractionsPerTenMinutes="@contractionsPerTenMinutes" 
+    averageDuration="@averageDuration"
+/>
+
 
 
 
@@ -74,9 +80,6 @@
         //startar en timer som uppdaterar tiden varje sekund
         timer = new Timer(UpdateElapsedTime, null, 0, 1000);
         isRunning = true;
-
-
-
     }
 
 
@@ -93,11 +96,11 @@
             //Lägger till värk
             await contractionService.AddContractionAsync(startTime.Value, endTime);
 
-            //hämta listan från service och uppdatera listan och sammanfattnignen
-            contractions = await contractionService.GetContractionsLastHourAsync();
-            contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
-            averageDuration = contractionService.GetAverageDuration();
-            averageRestTime = contractionService.GetAverageRestTime();
+            //hämta listan från service och uppdatera listan och sammanfattnignen till UI
+             contractions = await contractionService.GetContractionsLastHourAsync();
+             contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
+             averageDuration = contractionService.GetAverageDuration();
+            // averageRestTime = contractionService.GetAverageRestTime();
 
 
             //stoppa timer
@@ -141,7 +144,7 @@
 
 
     /// <summary>
-    /// En event callback för att ta emot uppdaterad lista
+    /// En event callback för att ta emot uppdaterad lista från barnkomponenten ContractionList
     /// </summary>
     /// <param name="updateContractions"></param>
     private void UpdateContractions(List<ContractionModel> updateContractions)
