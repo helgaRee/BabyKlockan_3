@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BabyKlockan_3", "BabyKlockan_3\BabyKlockan_3.csproj", "{6C0E10B5-F510-4A72-9895-27E9688C5497}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabyKlockanTest", "BabyKlockanTest\BabyKlockanTest.csproj", "{D1D61523-4F2B-4BAA-AF48-706B91515F1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BabyKlockanTest", "BabyKlockanTest\BabyKlockanTest.csproj", "{D1D61523-4F2B-4BAA-AF48-706B91515F1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

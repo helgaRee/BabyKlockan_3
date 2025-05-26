@@ -19,12 +19,13 @@ public class ContractionService
 
     private readonly DataContext _context;
 
+
     public ContractionService(DataContext context)
     {
 
         _context = context;
-    }
 
+    }
 
     /// <summary>
     /// Metod för att lägga till en värk till listan. skicka med start och sluttid från modell
@@ -62,6 +63,7 @@ public class ContractionService
         //Efter att ha skapat en värk, lägg till den i listan
         await _context.Contractions!.AddAsync(contraction);
         await _context.SaveChangesAsync();
+        await RenumberAndSaveAsync();
 
     }
 
@@ -71,8 +73,36 @@ public class ContractionService
     /// <returns></returns>
     public async Task<List<ContractionModel>> GetAllContractionsAsync()
     {
-        var contractions = await _context.Contractions!.ToListAsync();
+        var contractions = await _context.Contractions!
+            .OrderBy(c => c.StartTime)
+            .ToListAsync();
+
+        // Sätt löpnummer för visning
+        for (int i = 0; i < contractions.Count; i++)
+        {
+            contractions[i].Number = i + 1;
+        }
+
         return contractions;
+    }
+
+    /// <summary>
+    /// Hjälpmetod för återställning
+    /// </summary>
+    /// <param name="contractions"></param>
+    /// <returns></returns>
+    public async Task RenumberAndSaveAsync()
+    {
+        var contractions = await _context.Contractions!
+            .OrderBy(c => c.StartTime)
+            .ToListAsync();
+
+        for (int i = 0; i < contractions.Count; i++)
+        {
+            contractions[i].Number = i + 1;
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task<List<ContractionModel>> GetContractionsLastHourAsync()
@@ -100,6 +130,7 @@ public class ContractionService
         {
             _context.Contractions!.Remove(contraction);
             await _context.SaveChangesAsync();
+            await RenumberAndSaveAsync();
             Debug.WriteLine("värk borttagen ur db");
         }
     }
@@ -132,21 +163,6 @@ public class ContractionService
         _context.Contractions!.RemoveRange(allContractions);
         await _context.SaveChangesAsync();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

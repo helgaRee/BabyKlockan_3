@@ -1,24 +1,25 @@
 ﻿@page "/"
+@using BabyKlockan_3.Models
 
-<PageTitle>Index</PageTitle>
-
+<PageTitle>BabyKlockan</PageTitle>
 
     <section class="contractionTimer">
+
+
         <div class="container">
-    <h1>BabyKlockan</h1>
+            <div class="flex-row">
+                <img class="logotype" src="/images/logotyp_.png" alt="Logotyp" />
+                 <h1>BabyKlockan</h1>
+
+            </div>
         <div class="stopwatch">   
             <BabyKlockan_3.Pages.ContractionTimer />
+
             </div>
-         
-
-
-
-     @* <BabyKlockan_3.Pages.ContractionList /> *@
-
-
         </div>
     </section>
 
     @code {
+
 
     }

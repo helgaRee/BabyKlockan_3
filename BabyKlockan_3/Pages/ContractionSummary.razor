@@ -1,10 +1,20 @@
-﻿@* Visar statistikdata (antal värkar per 10 min, medelvila, medellängd).
+﻿@using BabyKlockan_3.Models
+
+
+@* Visar statistikdata (antal värkar per 10 min, medelvila, medellängd).
 
 Får all data som @Parameter från föräldern (ContractionTimer). *@
 
 <div class="information">
-    <p class="info-amount">@ContractionsPerTenMinutes antal värkar per <strong>10</strong> minuter</p>
-    <p class="info-length"> Värken varaktig i <strong>@AverageDuration</strong> minuter</p>
+    <p class="info-amount"><strong>@ContractionsPerTenMinutes</strong> värkar under de senaste 10 minuterna</p>
+
+    @{
+        var durationTimeSpan = TimeSpan.FromMinutes(AverageDuration);
+        var formattedDuration = durationTimeSpan.ToString(@"mm\:ss");
+    }
+
+
+    @* <p class="info-length"> Värkarnas medellängd är <strong>@formattedDuration</strong> minuter</p> *@
      
     @*<p class="info-rest">@AverageRestTime minuter mellan värkar</p> *@
 </div>
@@ -13,5 +23,15 @@ Får all data som @Parameter från föräldern (ContractionTimer). *@
     [Parameter] public double ContractionsPerTenMinutes { get; set; }
     [Parameter] public double AverageRestTime { get; set; }
     [Parameter] public double AverageDuration { get; set; }
+
+    //Parameter för att kunna ta emot värkar från föräldern
+    [Parameter] public List<ContractionModel> contractions { get; set; } = new List<ContractionModel>();
+    //Definierar en EventCallback-parameter för att kunna skicka uppdaterad lista till föräldern (ContractionTimer)
+    [Parameter]
+    public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
+
+
+
+  
 
 }

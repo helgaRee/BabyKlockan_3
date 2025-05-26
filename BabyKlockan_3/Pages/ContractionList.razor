@@ -1,7 +1,11 @@
 ﻿@using BabyKlockan_3.Models
 @using BabyKlockan_3.Services
 @using System.Diagnostics
+@using BlazorBootstrap
 @inject ContractionService contractionService
+
+@* skapar referens *@
+<ConfirmDialog @ref="dialog" />
 
 @*BARNKOMPONENT TILL TIMER: Visar värklista som tabell.
 
@@ -10,8 +14,14 @@ Kan visa alla sparade värkar (via ShowAllContractions()).
 Kan radera enskilda värkar eller alla.
 
 Använder ContractionService för datakommunikation. *@
-
-<button class="btn" onclick="@ShowAllContractions">Visa alla sparade värkar</button>
+<div class="container">
+    <div class="position-absolute top-0 start-0">
+      @*   <img class="logotype" src="/images/logotyp_.png" alt="Logotyp" /> *@
+    </div>
+    <div class="position-absolute top-0 end-0">
+        <button class="btn btn-secondary" onclick="@ShowAllContractions">Visa alla sparade värkar</button>
+    </div>
+</div>
 
 
 
@@ -22,13 +32,14 @@ Använder ContractionService för datakommunikation. *@
 }
 else
 {
-<div class="dataPresentation">
+    <div class="dataPresentation position-relative">
     <table class="table">
         <thead>
             <tr>
                 <th>#</th>
                 <th>Längd</th>
                 <th>Vila</th>
+                    <th><i class="fa-regular fa-trash-can"></i>X</th>
             </tr>
         </thead>
         <tbody>
@@ -52,20 +63,20 @@ else
                             }
                         </td>
 
-                        <td>
+                        <td class="">
                             <button @onclick="async () => await RemoveContraction(contraction.Id)" class="btn-remove">Ta bort</button>
                         </td>
                     </tr>
                 }
+
             
+      <div class="position-absolute bottom-0 end-0">
+        <button class="btn btn-remove" @onclick="ShowConfirmationAsync">Rensa hela listan</button>
+    </div> 
         </tbody>
     </table>
-        <button class="btn" onclick="@DeleteAllContractions">Rensa hela listan</button>
 
     </div>
-
-
-
 }
 
 @code {
@@ -75,7 +86,6 @@ else
     [Parameter] 
     public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
 
-   // int counter = 1;
 
     private async Task ShowAllContractions()
     {
@@ -109,6 +119,7 @@ else
         //anropa service, hämta data från db
         await contractionService.RemoveContractionByIdAsync(id);
 
+
         //Ta bort från UI-listan
         var contractionToRemove = contractions.FirstOrDefault(c => c.Id == id);
         if (contractionToRemove != null)
@@ -128,7 +139,38 @@ else
 
 
 
+    //deklarerar variable som motsvarar referensen
+    private ConfirmDialog dialog = default!;
 
+
+    private ConfirmDialogOptions options = new()
+        {
+            IsVerticallyCentered = true,
+            IsScrollable = true
+        };
+
+
+    private async Task ShowConfirmationAsync()
+    {
+
+        Debug.WriteLine("inne i showconfirmationasyc debug");
+
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Är du säker att du vill rensa hela listan?",
+            message1: "Alla sparade värkar kommer tas bort, du kan inte ångra detta",
+            message2: "Vill du fortsätta?",
+             confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            await contractionService.ClearListAsync();
+            contractions.Clear();
+            await OnContractionChange.InvokeAsync(contractions);
+
+        }
+
+    }
 
 
 

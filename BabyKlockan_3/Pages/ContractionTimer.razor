@@ -18,11 +18,14 @@ Skickar uppdaterad lista till ContractionList och sammanfattning till Contractio
 
 
 <!--Binder föräldrarkomponenten till metoden-->
-<ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
 <ContractionSummary 
     contractionsPerTenMinutes="@contractionsPerTenMinutes" 
     averageDuration="@averageDuration"
 />
+<ContractionList contractions="@contractions" OnContractionChange="UpdateContractions" />
+
+@* <Confirm contractions="@contractions" OnContractionChange="UpdateContractions" /> *@
+
 
 
 
@@ -97,10 +100,8 @@ Skickar uppdaterad lista till ContractionList och sammanfattning till Contractio
             await contractionService.AddContractionAsync(startTime.Value, endTime);
 
             //hämta listan från service och uppdatera listan och sammanfattnignen till UI
-             contractions = await contractionService.GetContractionsLastHourAsync();
-             contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
-             averageDuration = contractionService.GetAverageDuration();
-            // averageRestTime = contractionService.GetAverageRestTime();
+            await UpdateStatisticsAsync();
+
 
 
             //stoppa timer
@@ -115,6 +116,14 @@ Skickar uppdaterad lista till ContractionList och sammanfattning till Contractio
 
             StateHasChanged();
         }
+    }
+
+
+    private async Task UpdateStatisticsAsync()
+    {
+        contractions = await contractionService.GetContractionsLastHourAsync();
+        contractionsPerTenMinutes = contractionService.GetContractionsPerTenMinutes();
+
     }
 
     /// <summary>
@@ -137,7 +146,7 @@ Skickar uppdaterad lista till ContractionList och sammanfattning till Contractio
             }
             catch (ObjectDisposedException)
             {
-                
+
             }
         }
     }
@@ -147,9 +156,16 @@ Skickar uppdaterad lista till ContractionList och sammanfattning till Contractio
     /// En event callback för att ta emot uppdaterad lista från barnkomponenten ContractionList
     /// </summary>
     /// <param name="updateContractions"></param>
-    private void UpdateContractions(List<ContractionModel> updateContractions)
+    private async void UpdateContractions(List<ContractionModel> updateContractions)
     {
+        //uppdaterar listan
         contractions = updateContractions;
+
+        //uppdatera statistiken
+        await UpdateStatisticsAsync();
+
+        //uppdatera UI
+        StateHasChanged();
     }
 
 }

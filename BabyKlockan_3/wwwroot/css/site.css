@@ -1,5 +1,4 @@
-﻿@import url("open-iconic/font/css/open-iconic-bootstrap.min.css");
-html, body {
+﻿html, body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -11,16 +10,11 @@ a, .btn-link {
   color: #0071c1;
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
-
-.content {
-  padding-top: 1.1rem;
-}
-
+/*.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}*/
 .valid.modified:not([type=checkbox]) {
   outline: 1px solid #26b050;
 }
@@ -62,12 +56,18 @@ a, .btn-link {
   content: "An error has occurred.";
 }
 
+.px-4 {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
 :root {
-  --primary-color: #acc8ce;
+  --primary-color: #FDFBEE;
   --hover-color: #c9c9c9;
-  --accent-color: #0071FF;
+  --accent-color: #A6D6D6;
   --text-color: #272832;
-  --pink-color: #f294ad;
+  --secondary-color: #F7CFD8;
+  --tr-color: #34adad;
 }
 
 * {
@@ -81,12 +81,21 @@ html {
   font-family: Poppins, "Segoe UI", sans-serif;
 }
 
+.logotype {
+  width: 42px;
+  height: 42px;
+}
+
+.flex-row {
+  display: flex;
+}
+
 body {
   min-height: 100vh;
   min-height: 100dvh;
 }
 body .contractionTimer {
-  background-color: #CEACC8;
+  background-color: var(--primary-color);
 }
 body .contractionTimer .container {
   display: flex;
@@ -100,6 +109,7 @@ body .contractionTimer .container {
 
   .start-trigger {
   }*/
+  /*ta bort fade-klass*/
 }
 body .contractionTimer .container h1 {
   color: var(--text-color);
@@ -154,12 +164,25 @@ body .contractionTimer .container .btn-stop:hover {
   }
 }
 body .contractionTimer .container .information {
-  background-color: white;
-  padding: 1em 2em;
-  border-radius: 1em;
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 body .contractionTimer .container .information p {
   color: #4d394a;
+}
+body .contractionTimer .container .btn-secondary {
+  margin: 10px;
+  font-size: small;
+}
+body .contractionTimer .container .modal.fade {
+  opacity: 1 !important;
+  transition: none !important;
+}
+body .contractionTimer .container .dataPresentation {
+  padding-bottom: 12px;
 }
 body .contractionTimer .container .dataPresentation table {
   border: 1px solid white;
@@ -173,7 +196,7 @@ body .contractionTimer .container .dataPresentation table tr {
 body .contractionTimer .container .dataPresentation table tr th {
   border: 1px solid white;
   border-collapse: collapse;
-  background-color: #96D4D4;
+  background-color: var(--accent-color);
   padding: 0.3em 1em;
   text-align: center;
 }
@@ -222,10 +245,10 @@ body .contractionTimer .container .dataPresentation table tr .data-rest div {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.3s;
-}
-.rest-visual .rest-block:hover {
-  transform: translateY(-150%) scale(1.1);
-  background-color: #cce7ff;
+  /*        &:hover {
+              transform: translateY(-150%) scale(1.1);
+              background-color: #cce7ff;
+          }*/
 }
 .rest-visual .arrow {
   font-size: 1.5rem;
@@ -241,7 +264,7 @@ body .contractionTimer .container .dataPresentation table tr .data-rest div {
 }
 
 .btn-remove {
-  background-color: #ff4d4d;
+  background-color: #ff4d4d !important;
   color: white;
   border: none;
   padding: 4px 9px;

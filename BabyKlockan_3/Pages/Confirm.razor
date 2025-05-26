@@ -1,0 +1,65 @@
+﻿@using BabyKlockan_3.Models
+@using BabyKlockan_3.Services
+@using BlazorBootstrap
+@using System.Diagnostics
+@inject ContractionService service
+
+
+@* skapar referens *@
+<ConfirmDialog @ref="dialog" />
+
+<div class="position-absolute bottom-0 end-0">
+        <button class="btn btn-remove" @onclick="ShowConfirmationAsync">Rensa hela listan</button>
+</div>
+
+
+
+
+@code {
+    //Parameter för att kunna ta emot värkar från föräldern.
+    [Parameter] public List<ContractionModel> contractions { get; set; } = new List<ContractionModel>();
+    //Definierar en EventCallback-parameter för att kunna skicka uppdaterad lista till föräldern (ContractionTimer)
+    [Parameter]
+    public EventCallback<List<ContractionModel>> OnContractionChange { get; set; }
+    //deklarerar variable som motsvarar referensen
+    private ConfirmDialog dialog = default!;
+
+
+    private ConfirmDialogOptions options = new()
+        {
+            IsVerticallyCentered = true,
+            IsScrollable = true
+        };
+
+
+    private async Task ShowConfirmationAsync()
+    {
+
+        Debug.WriteLine("inne i showconfirmationasyc debug");
+
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Är du säker att du vill rensa hela listan?",
+            message1: "Alla sparade värkar kommer tas bort, du kan inte ångra detta",
+            message2: "Vill du fortsätta?",
+             confirmDialogOptions: options);
+
+        if(confirmation)
+        {
+            await service.ClearListAsync();
+            contractions.Clear();
+            StateHasChanged();
+            await OnContractionChange.InvokeAsync(contractions);
+        }
+
+    }
+
+
+    private async Task DeleteAllContractions()
+    {
+        await service.ClearListAsync();
+        StateHasChanged();
+    }
+
+
+}

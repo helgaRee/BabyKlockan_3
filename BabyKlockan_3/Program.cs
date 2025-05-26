@@ -1,4 +1,5 @@
 using BabyKlockan_3.Data;
+using BabyKlockan_3.Hubs;
 using BabyKlockan_3.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +41,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapBlazorHub();
+
 app.MapFallbackToPage("/_Host");
 
 app.Run();
